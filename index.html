@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Website Desa Digital</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  h2 { text-align: center; margin-bottom: 20px; }
+  canvas { max-width: 600px; margin: 30px auto; display: block; }
+  select { margin: 10px; padding: 5px; }
+</style>
+</head>
+<body>
+
+<h2>Dashboard Statistik Penduduk Desa</h2>
+
+<label>Filter Dusun: 
+<select id="dusunFilter">
+  <option value="All">Semua Dusun</option>
+</select>
+</label>
+
+<canvas id="genderChart"></canvas>
+<canvas id="ageChart"></canvas>
+<canvas id="jobChart"></canvas>
+<canvas id="educationChart"></canvas>
+
+<script>
+const apiUrl = "https://script.google.com/macros/s/AKfycbxOQ5FBhNDSLgTNnhiGO8U_5V_Ug79CWjvtsnNQVFOHWzOi725JIoV0-j5dpLk2QMENyA/exec"; // ganti dengan Web App URL
+
+let rawData = [];
+let filteredData = [];
+
+async function loadData() {
+  const res = await fetch(apiUrl);
+  rawData = await res.json();
+
+  // isi filter dusun
+  const dusunSet = new Set(rawData.map(p => p["Dusun"]));
+  const dusunSelect = document.getElementById("dusunFilter");
+  dusunSet.forEach(d => {
+    const opt = document.createElement("option");
+    opt.value = d; opt.textContent = d;
+    dusunSelect.appendChild(opt);
+  });
+
+  filteredData = [...rawData];
+  renderCharts();
+}
+
+document.getElementById("dusunFilter").addEventListener("change", e=>{
+  const val = e.target.value;
+  filteredData = val === "All" ? rawData : rawData.filter(p=>p["Dusun"]===val);
+  renderCharts();
+});
+
+function renderCharts() {
+  // Gender
+  const genderCount = {Laki_laki:0, Perempuan:0};
+  filteredData.forEach(p=>{
+    if(p["Jenis Kelamin"]==="Laki-laki") genderCount.Laki_laki++;
+    else if(p["Jenis Kelamin"]==="Perempuan") genderCount.Perempuan++;
+  });
+  new Chart(document.getElementById("genderChart"), {
+    type: "pie",
+    data: {
+      labels: ["Laki-laki","Perempuan"],
+      datasets: [{ data: [genderCount.Laki_laki, genderCount.Perempuan], backgroundColor:["#36A2EB","#FF6384"] }]
+    },
+    options: { responsive:true, plugins:{legend:{position:"bottom"}}, title:{display:true, text:"Distribusi Gender"} }
+  });
+
+  // Umur
+  const ageRanges = {'0-17':0,'18-30':0,'31-45':0,'46-60':0,'61+':0};
+  filteredData.forEach(p=>{
+    const age = p["Umur"];
+    if(age<=17) ageRanges['0-17']++;
+    else if(age<=30) ageRanges['18-30']++;
+    else if(age<=45) ageRanges['31-45']++;
+    else if(age<=60) ageRanges['46-60']++;
+    else ageRanges['61+']++;
+  });
+  new Chart(document.getElementById("ageChart"), {
+    type: "bar",
+    data: {
+      labels: Object.keys(ageRanges),
+      datasets:[{label:"Jumlah Penduduk", data:Object.values(ageRanges), backgroundColor:"#4BC0C0"}]
+    },
+    options:{responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}
+  });
+
+  // Pekerjaan
+  const jobCount = {};
+  filteredData.forEach(p=>{
+    if(!jobCount[p["Pekerjaan"]]) jobCount[p["Pekerjaan"]]=0;
+    jobCount[p["Pekerjaan"]]++;
+  });
+  new Chart(document.getElementById("jobChart"), {
+    type: "pie",
+    data:{
+      labels:Object.keys(jobCount),
+      datasets:[{data:Object.values(jobCount), backgroundColor:["#FF6384","#36A2EB","#FFCE56","#4BC0C0","#9966FF"]}]
+    },
+    options:{responsive:true, plugins:{legend:{position:"bottom"}}, title:{display:true, text:"Distribusi Pekerjaan"}}
+  });
+
+  // Pendidikan
+  const eduCount = {};
+  filteredData.forEach(p=>{
+    if(!eduCount[p["Pendidikan"]]) eduCount[p["Pendidikan"]]=0;
+    eduCount[p["Pendidikan"]]++;
+  });
+  new Chart(document.getElementById("educationChart"), {
+    type: "pie",
+    data:{
+      labels:Object.keys(eduCount),
+      datasets:[{data:Object.values(eduCount), backgroundColor:["#36A2EB","#FF6384","#FFCE56","#4BC0C0","#9966FF"]}]
+    },
+    options:{responsive:true, plugins:{legend:{position:"bottom"}}, title:{display:true, text:"Distribusi Pendidikan"}}
+  });
+}
+
+loadData();
+</script>
+
+</body>
+</html>
