@@ -1,12 +1,11 @@
-// Ganti dengan URL Apps Script kamu
+// Ganti dengan URL Apps Script kamu (JSONP)
 const apiUrl = "https://script.google.com/macros/s/AKfycbwIqQ5QIvBvy_tH5qxStKjVKEAph_9Y7em5TIw-4pmKbfSM_WJf3uI1oLo6NycHnlkijg/exec?callback=handleData";
 
 // =====================
-// Fungsi callback JSONP
+// Callback JSONP
 // =====================
 function handleData(data) {
     console.log("Data diterima:", data);
-
     if(!data || data.length === 0){
         console.warn("Data kosong!");
         return;
@@ -18,12 +17,9 @@ function handleData(data) {
     const table = document.getElementById('pendudukTable');
     const thead = table.querySelector('thead');
     const tbody = table.querySelector('tbody');
-
-    // Clear sebelumnya
     thead.innerHTML = "";
     tbody.innerHTML = "";
 
-    // Buat header tabel
     const headers = Object.keys(data[0]);
     const trHead = document.createElement('tr');
     headers.forEach(h => {
@@ -33,7 +29,6 @@ function handleData(data) {
     });
     thead.appendChild(trHead);
 
-    // Buat isi tabel
     data.forEach(row => {
         const tr = document.createElement('tr');
         headers.forEach(h => {
@@ -50,12 +45,11 @@ function handleData(data) {
     const dusunCount = {};
     data.forEach(d => dusunCount[d.Dusun] = (dusunCount[d.Dusun] || 0) + 1);
 
-    const ctxDusun = document.getElementById('dusunChart').getContext('2d');
-    new Chart(ctxDusun, {
+    new Chart(document.getElementById('dusunChart').getContext('2d'), {
         type: 'pie',
         data: {
             labels: Object.keys(dusunCount),
-            datasets: [{
+            datasets: [{ 
                 data: Object.values(dusunCount),
                 backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40']
             }]
@@ -69,14 +63,72 @@ function handleData(data) {
     const genderCount = {};
     data.forEach(d => genderCount[d["Jenis Kelamin"]] = (genderCount[d["Jenis Kelamin"]] || 0) + 1);
 
-    const ctxGender = document.getElementById('genderChart').getContext('2d');
-    new Chart(ctxGender, {
+    new Chart(document.getElementById('genderChart').getContext('2d'), {
         type: 'pie',
         data: {
             labels: Object.keys(genderCount),
             datasets: [{
                 data: Object.values(genderCount),
                 backgroundColor: ['#36A2EB','#FF6384']
+            }]
+        },
+        options: { responsive: true }
+    });
+
+    // ---------------------
+    // 4️⃣ PIE CHART UMUR (Kategori)
+    // ---------------------
+    const ageGroups = { "Anak (<17)":0, "Dewasa (17-59)":0, "Lansia (60+)":0 };
+    data.forEach(d => {
+        const age = parseInt(d.Umur);
+        if(age < 17) ageGroups["Anak (<17)"]++;
+        else if(age <= 59) ageGroups["Dewasa (17-59)"]++;
+        else ageGroups["Lansia (60+)"]++;
+    });
+
+    new Chart(document.getElementById('ageChart').getContext('2d'), {
+        type: 'pie',
+        data: {
+            labels: Object.keys(ageGroups),
+            datasets: [{
+                data: Object.values(ageGroups),
+                backgroundColor: ['#FFCE56','#4BC0C0','#9966FF']
+            }]
+        },
+        options: { responsive: true }
+    });
+
+    // ---------------------
+    // 5️⃣ PIE CHART PENDIDIKAN
+    // ---------------------
+    const educationCount = {};
+    data.forEach(d => educationCount[d.Pendidikan] = (educationCount[d.Pendidikan] || 0) + 1);
+
+    new Chart(document.getElementById('educationChart').getContext('2d'), {
+        type: 'pie',
+        data: {
+            labels: Object.keys(educationCount),
+            datasets: [{
+                data: Object.values(educationCount),
+                backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40']
+            }]
+        },
+        options: { responsive: true }
+    });
+
+    // ---------------------
+    // 6️⃣ PIE CHART PEKERJAAN
+    // ---------------------
+    const jobCount = {};
+    data.forEach(d => jobCount[d.Pekerjaan] = (jobCount[d.Pekerjaan] || 0) + 1);
+
+    new Chart(document.getElementById('jobChart').getContext('2d'), {
+        type: 'pie',
+        data: {
+            labels: Object.keys(jobCount),
+            datasets: [{
+                data: Object.values(jobCount),
+                backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40','#FF9F40']
             }]
         },
         options: { responsive: true }
