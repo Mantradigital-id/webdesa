@@ -1,4 +1,4 @@
-const apiUrl = "https://script.google.com/macros/s/AKfycbxOQ5FBhNDSLgTNnhiGO8U_5V_Ug79CWjvtsnNQVFOHWzOi725JIoV0-j5dpLk2QMENyA/exec"; // Ganti dengan URL Apps Script
+const apiUrl = "https://script.google.com/macros/s/AKfycbwIqQ5QIvBvy_tH5qxStKjVKEAph_9Y7em5TIw-4pmKbfSM_WJf3uI1oLo6NycHnlkijg/exec"; // Ganti dengan URL Apps Script
 
 fetch(apiUrl)
   .then(res => res.json())
