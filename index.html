@@ -1,66 +1,91 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Desa Digital</title>
-  <link rel="stylesheet" href="css/style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desa Digital Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <header>
-    <h1>Dashboard Desa Digital</h1>
-    <p>Menampilkan data penduduk dan statistik desa secara real-time</p>
-  </header>
+<header>
+  <div class="header-container">
+    <img src="logo-desa.png" alt="Logo Desa" class="logo">
+    <div class="header-text">
+      <h1>Desa Digital</h1>
+      <p>Dashboard Interaktif Penduduk & Statistik</p>
+    </div>
+  </div>
+</header>
 
-  <main>
-    <!-- Tabel Penduduk -->
-    <section>
-      <h2>Data Penduduk</h2>
-      <div class="table-container">
-        <table id="pendudukTable">
-          <thead></thead>
-          <tbody></tbody>
-        </table>
+<main>
+  <!-- Cards Ringkasan -->
+  <section class="cards-section">
+    <div class="card" id="totalPenduduk">
+      <h3>Total Penduduk</h3>
+      <p>0</p>
+    </div>
+    <div class="card" id="totalDusun">
+      <h3>Jumlah Dusun</h3>
+      <p>0</p>
+    </div>
+    <div class="card" id="totalLaki">
+      <h3>Laki-laki</h3>
+      <p>0</p>
+    </div>
+    <div class="card" id="totalPerempuan">
+      <h3>Perempuan</h3>
+      <p>0</p>
+    </div>
+  </section>
+
+  <!-- Tabel Penduduk -->
+  <section>
+    <h2>Data Penduduk</h2>
+    <div class="table-container">
+      <table id="pendudukTable">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Statistik Charts -->
+  <section>
+    <h2>Statistik Penduduk</h2>
+    <div class="charts-grid">
+      <div class="chart-box">
+        <h3>Dusun</h3>
+        <canvas id="dusunChart"></canvas>
       </div>
-    </section>
-
-    <!-- Statistik -->
-    <section>
-      <h2>Statistik Penduduk</h2>
-      <div class="charts-grid">
-        <div class="chart-box">
-          <h3>Dusun</h3>
-          <canvas id="dusunChart"></canvas>
-        </div>
-        <div class="chart-box">
-          <h3>Jenis Kelamin</h3>
-          <canvas id="genderChart"></canvas>
-        </div>
-        <div class="chart-box">
-          <h3>Umur</h3>
-          <canvas id="ageChart"></canvas>
-        </div>
-        <div class="chart-box">
-          <h3>Pendidikan</h3>
-          <canvas id="educationChart"></canvas>
-        </div>
-        <div class="chart-box">
-          <h3>Pekerjaan</h3>
-          <canvas id="jobChart"></canvas>
-        </div>
-        <div class="chart-box">
-          <h3>Status Kawin</h3>
-          <canvas id="maritalChart"></canvas>
-        </div>
+      <div class="chart-box">
+        <h3>Jenis Kelamin</h3>
+        <canvas id="genderChart"></canvas>
       </div>
-    </section>
-  </main>
+      <div class="chart-box">
+        <h3>Umur</h3>
+        <canvas id="ageChart"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Pendidikan</h3>
+        <canvas id="educationChart"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Pekerjaan</h3>
+        <canvas id="jobChart"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Status Kawin</h3>
+        <canvas id="maritalChart"></canvas>
+      </div>
+    </div>
+  </section>
+</main>
 
-  <footer>
-    <p>&copy; 2026 Desa Digital. All rights reserved.</p>
-  </footer>
+<footer>
+  <p>&copy; 2026 Desa Digital. All rights reserved.</p>
+</footer>
 
-  <script src="js/app.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
