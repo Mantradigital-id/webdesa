@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desa Digital Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+</head>
+<body>
+<header>
+  <h1>Desa Digital Dashboard</h1>
+  <p>Statistik Penduduk Desa Interaktif</p>
+</header>
+<div class="container">
+  <div id="filters">
+    <label>Dusun: <select id="dusunFilter"><option value="All">Semua Dusun</option></select></label>
+    <label>RT: <select id="rtFilter"><option value="All">Semua RT</option></select></label>
+    <label>RW: <select id="rwFilter"><option value="All">Semua RW</option></select></label>
+  </div>
+  <div class="cards">
+    <div class="card"><h2 id="totalPenduduk">0</h2><p>Total Penduduk</p></div>
+    <div class="card"><h2 id="totalLaki">0</h2><p>Laki-laki</p></div>
+    <div class="card"><h2 id="totalPerempuan">0</h2><p>Perempuan</p></div>
+    <div class="card"><h2 id="totalRT">0</h2><p>Jumlah RT</p></div>
+    <div class="card"><h2 id="totalRW">0</h2><p>Jumlah RW</p></div>
+  </div>
+  <div class="chart-container"><canvas id="genderChart"></canvas></div>
+  <div class="chart-container"><canvas id="ageChart"></canvas></div>
+  <div class="chart-container"><canvas id="jobChart"></canvas></div>
+  <div class="chart-container"><canvas id="educationChart"></canvas></div>
+  <div class="chart-container">
+    <h2>Data Penduduk</h2>
+    <table id="pendudukTable" class="display"><thead><tr>
+      <th>NIK</th><th>No KK</th><th>Nama</th><th>Jenis Kelamin</th>
+      <th>Umur</th><th>Pekerjaan</th><th>Pendidikan</th>
+      <th>Status Kawin</th><th>Alamat</th><th>Dusun</th><th>RT</th><th>RW</th>
+    </tr></thead><tbody></tbody></table>
+  </div>
+</div>
+<script src="libs/jquery.min.js"></script>
+<script src="libs/datatables.min.js"></script>
+<script src="libs/chart.min.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
