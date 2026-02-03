@@ -3,59 +3,146 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Website Desa Digital</title>
+<title>Desa Digital Dashboard</title>
+
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
 <style>
-  body { font-family: Arial, sans-serif; padding: 20px; }
-  h2 { text-align: center; margin-bottom: 20px; }
-  canvas { max-width: 600px; margin: 30px auto; display: block; }
-  select { margin: 10px; padding: 5px; }
+body { font-family: 'Segoe UI', sans-serif; margin:0; padding:0; background:#f4f6f8; }
+header { background:#4CAF50; color:white; padding:20px; text-align:center; }
+h1 { margin:0; font-size:2em; }
+.container { max-width:1200px; margin:20px auto; padding:10px; }
+.cards { display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-bottom:30px; }
+.card { background:white; padding:20px; border-radius:10px; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-align:center; }
+.card h2 { font-size:1.5em; margin-bottom:10px; }
+.chart-container { background:white; padding:20px; border-radius:10px; box-shadow:0 4px 6px rgba(0,0,0,0.1); margin-bottom:30px; }
+#filters { margin-bottom:20px; display:flex; gap:10px; flex-wrap:wrap; }
+#filters select { padding:5px 10px; border-radius:5px; border:1px solid #ccc; }
+table.dataTable { width:100% !important; }
 </style>
 </head>
 <body>
 
-<h2>Dashboard Statistik Penduduk Desa</h2>
+<header>
+  <h1>Desa Digital Dashboard</h1>
+  <p>Statistik Penduduk Desa Interaktif</p>
+</header>
 
-<label>Filter Dusun: 
-<select id="dusunFilter">
-  <option value="All">Semua Dusun</option>
-</select>
-</label>
+<div class="container">
 
-<canvas id="genderChart"></canvas>
-<canvas id="ageChart"></canvas>
-<canvas id="jobChart"></canvas>
-<canvas id="educationChart"></canvas>
+  <!-- Filter -->
+  <div id="filters">
+    <label>Dusun: 
+      <select id="dusunFilter"><option value="All">Semua Dusun</option></select>
+    </label>
+    <label>RT: 
+      <select id="rtFilter"><option value="All">Semua RT</option></select>
+    </label>
+    <label>RW: 
+      <select id="rwFilter"><option value="All">Semua RW</option></select>
+    </label>
+  </div>
+
+  <!-- Cards summary -->
+  <div class="cards">
+    <div class="card"><h2 id="totalPenduduk">0</h2><p>Total Penduduk</p></div>
+    <div class="card"><h2 id="totalLaki">0</h2><p>Laki-laki</p></div>
+    <div class="card"><h2 id="totalPerempuan">0</h2><p>Perempuan</p></div>
+    <div class="card"><h2 id="totalRT">0</h2><p>Jumlah RT</p></div>
+    <div class="card"><h2 id="totalRW">0</h2><p>Jumlah RW</p></div>
+  </div>
+
+  <!-- Charts -->
+  <div class="chart-container"><canvas id="genderChart"></canvas></div>
+  <div class="chart-container"><canvas id="ageChart"></canvas></div>
+  <div class="chart-container"><canvas id="jobChart"></canvas></div>
+  <div class="chart-container"><canvas id="educationChart"></canvas></div>
+
+  <!-- Table -->
+  <div class="chart-container">
+    <h2>Data Penduduk</h2>
+    <table id="pendudukTable" class="display">
+      <thead>
+        <tr>
+          <th>NIK</th><th>No KK</th><th>Nama</th><th>Jenis Kelamin</th>
+          <th>Umur</th><th>Pekerjaan</th><th>Pendidikan</th>
+          <th>Status Kawin</th><th>Alamat</th><th>Dusun</th><th>RT</th><th>RW</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+</div>
 
 <script>
-const apiUrl = "https://script.google.com/macros/s/AKfycbxOQ5FBhNDSLgTNnhiGO8U_5V_Ug79CWjvtsnNQVFOHWzOi725JIoV0-j5dpLk2QMENyA/exec"; // ganti dengan Web App URL
-
-let rawData = [];
-let filteredData = [];
+const apiUrl = "https://script.google.com/macros/s/AKfycbxOQ5FBhNDSLgTNnhiGO8U_5V_Ug79CWjvtsnNQVFOHWzOi725JIoV0-j5dpLk2QMENyA/exec"; // Ganti dengan URL Apps Script Web App
+let rawData = [], filteredData = [];
 
 async function loadData() {
   const res = await fetch(apiUrl);
   rawData = await res.json();
 
-  // isi filter dusun
-  const dusunSet = new Set(rawData.map(p => p["Dusun"]));
-  const dusunSelect = document.getElementById("dusunFilter");
-  dusunSet.forEach(d => {
-    const opt = document.createElement("option");
-    opt.value = d; opt.textContent = d;
-    dusunSelect.appendChild(opt);
+  // hitung umur otomatis
+  rawData.forEach(p=>{
+    const dob = new Date(p["Tanggal Lahir"]);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m<0 || (m===0 && today.getDate()<dob.getDate())) age--;
+    p["Umur"]=age;
   });
 
-  filteredData = [...rawData];
-  renderCharts();
+  populateFilters();
+  applyFilters();
 }
 
-document.getElementById("dusunFilter").addEventListener("change", e=>{
-  const val = e.target.value;
-  filteredData = val === "All" ? rawData : rawData.filter(p=>p["Dusun"]===val);
-  renderCharts();
-});
+function populateFilters() {
+  const dusunSet = new Set(rawData.map(p=>p["Dusun"]));
+  const rtSet = new Set(rawData.map(p=>p["RT"]));
+  const rwSet = new Set(rawData.map(p=>p["RW"]));
+  const dusunSelect = document.getElementById("dusunFilter");
+  const rtSelect = document.getElementById("rtFilter");
+  const rwSelect = document.getElementById("rwFilter");
 
+  dusunSet.forEach(d=>dusunSelect.appendChild(new Option(d,d)));
+  rtSet.forEach(d=>rtSelect.appendChild(new Option(d,d)));
+  rwSet.forEach(d=>rwSelect.appendChild(new Option(d,d)));
+
+  dusunSelect.addEventListener("change", applyFilters);
+  rtSelect.addEventListener("change", applyFilters);
+  rwSelect.addEventListener("change", applyFilters);
+}
+
+function applyFilters() {
+  const dusun = document.getElementById("dusunFilter").value;
+  const rt = document.getElementById("rtFilter").value;
+  const rw = document.getElementById("rwFilter").value;
+
+  filteredData = rawData.filter(p=>{
+    return (dusun==="All" || p["Dusun"]===dusun) &&
+           (rt==="All" || p["RT"]===rt) &&
+           (rw==="All" || p["RW"]===rw);
+  });
+  renderDashboard();
+  renderCharts();
+  renderTable();
+}
+
+function renderDashboard() {
+  document.getElementById("totalPenduduk").textContent = filteredData.length;
+  document.getElementById("totalLaki").textContent = filteredData.filter(p=>p["Jenis Kelamin"]==="Laki-laki").length;
+  document.getElementById("totalPerempuan").textContent = filteredData.filter(p=>p["Jenis Kelamin"]==="Perempuan").length;
+  document.getElementById("totalRT").textContent = new Set(filteredData.map(p=>p["RT"])).size;
+  document.getElementById("totalRW").textContent = new Set(filteredData.map(p=>p["RW"])).size;
+}
+
+let genderChartInstance, ageChartInstance, jobChartInstance, eduChartInstance;
 function renderCharts() {
   // Gender
   const genderCount = {Laki_laki:0, Perempuan:0};
@@ -63,17 +150,15 @@ function renderCharts() {
     if(p["Jenis Kelamin"]==="Laki-laki") genderCount.Laki_laki++;
     else if(p["Jenis Kelamin"]==="Perempuan") genderCount.Perempuan++;
   });
-  new Chart(document.getElementById("genderChart"), {
-    type: "pie",
-    data: {
-      labels: ["Laki-laki","Perempuan"],
-      datasets: [{ data: [genderCount.Laki_laki, genderCount.Perempuan], backgroundColor:["#36A2EB","#FF6384"] }]
-    },
-    options: { responsive:true, plugins:{legend:{position:"bottom"}}, title:{display:true, text:"Distribusi Gender"} }
+  if(genderChartInstance) genderChartInstance.destroy();
+  genderChartInstance = new Chart(document.getElementById("genderChart"), {
+    type:"pie",
+    data:{labels:["Laki-laki","Perempuan"], datasets:[{data:[genderCount.Laki_laki,genderCount.Perempuan],backgroundColor:["#36A2EB","#FF6384"]}]},
+    options:{responsive:true, plugins:{legend:{position:"bottom"}, title:{display:true,text:"Distribusi Gender"}}}
   });
 
   // Umur
-  const ageRanges = {'0-17':0,'18-30':0,'31-45':0,'46-60':0,'61+':0};
+  const ageRanges={'0-17':0,'18-30':0,'31-45':0,'46-60':0,'61+':0};
   filteredData.forEach(p=>{
     const age = p["Umur"];
     if(age<=17) ageRanges['0-17']++;
@@ -82,44 +167,48 @@ function renderCharts() {
     else if(age<=60) ageRanges['46-60']++;
     else ageRanges['61+']++;
   });
-  new Chart(document.getElementById("ageChart"), {
-    type: "bar",
-    data: {
-      labels: Object.keys(ageRanges),
-      datasets:[{label:"Jumlah Penduduk", data:Object.values(ageRanges), backgroundColor:"#4BC0C0"}]
-    },
+  if(ageChartInstance) ageChartInstance.destroy();
+  ageChartInstance = new Chart(document.getElementById("ageChart"), {
+    type:"bar",
+    data:{labels:Object.keys(ageRanges), datasets:[{label:"Jumlah Penduduk",data:Object.values(ageRanges),backgroundColor:"#4BC0C0"}]},
     options:{responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}
   });
 
   // Pekerjaan
-  const jobCount = {};
-  filteredData.forEach(p=>{
-    if(!jobCount[p["Pekerjaan"]]) jobCount[p["Pekerjaan"]]=0;
-    jobCount[p["Pekerjaan"]]++;
-  });
-  new Chart(document.getElementById("jobChart"), {
-    type: "pie",
-    data:{
-      labels:Object.keys(jobCount),
-      datasets:[{data:Object.values(jobCount), backgroundColor:["#FF6384","#36A2EB","#FFCE56","#4BC0C0","#9966FF"]}]
-    },
-    options:{responsive:true, plugins:{legend:{position:"bottom"}}, title:{display:true, text:"Distribusi Pekerjaan"}}
+  const jobCount={};
+  filteredData.forEach(p=>{jobCount[p["Pekerjaan"]] = (jobCount[p["Pekerjaan"]]||0)+1;});
+  if(jobChartInstance) jobChartInstance.destroy();
+  jobChartInstance = new Chart(document.getElementById("jobChart"), {
+    type:"pie",
+    data:{labels:Object.keys(jobCount), datasets:[{data:Object.values(jobCount), backgroundColor:["#FF6384","#36A2EB","#FFCE56","#4BC0C0","#9966FF"]}]},
+    options:{responsive:true, plugins:{legend:{position:"bottom"}, title:{display:true,text:"Distribusi Pekerjaan"}}}
   });
 
   // Pendidikan
-  const eduCount = {};
+  const eduCount={};
+  filteredData.forEach(p=>{eduCount[p["Pendidikan"]] = (eduCount[p["Pendidikan"]]||0)+1;});
+  if(eduChartInstance) eduChartInstance.destroy();
+  eduChartInstance = new Chart(document.getElementById("educationChart"), {
+    type:"pie",
+    data:{labels:Object.keys(eduCount), datasets:[{data:Object.values(eduCount), backgroundColor:["#36A2EB","#FF6384","#FFCE56","#4BC0C0","#9966FF"]}]},
+    options:{responsive:true, plugins:{legend:{position:"bottom"}, title:{display:true,text:"Distribusi Pendidikan"}}}
+  });
+}
+
+function renderTable() {
+  if($.fn.DataTable.isDataTable('#pendudukTable')) $('#pendudukTable').DataTable().destroy();
+  const tbody = document.querySelector("#pendudukTable tbody");
+  tbody.innerHTML = "";
   filteredData.forEach(p=>{
-    if(!eduCount[p["Pendidikan"]]) eduCount[p["Pendidikan"]]=0;
-    eduCount[p["Pendidikan"]]++;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${p["NIK"]}</td><td>${p["No KK"]}</td><td>${p["Nama"]}</td><td>${p["Jenis Kelamin"]}</td>
+      <td>${p["Umur"]}</td><td>${p["Pekerjaan"]}</td><td>${p["Pendidikan"]}</td>
+      <td>${p["Status Kawin"]}</td><td>${p["Alamat"]}</td><td>${p["Dusun"]}</td><td>${p["RT"]}</td><td>${p["RW"]}</td>
+    `;
+    tbody.appendChild(tr);
   });
-  new Chart(document.getElementById("educationChart"), {
-    type: "pie",
-    data:{
-      labels:Object.keys(eduCount),
-      datasets:[{data:Object.values(eduCount), backgroundColor:["#36A2EB","#FF6384","#FFCE56","#4BC0C0","#9966FF"]}]
-    },
-    options:{responsive:true, plugins:{legend:{position:"bottom"}}, title:{display:true, text:"Distribusi Pendidikan"}}
-  });
+  $('#pendudukTable').DataTable();
 }
 
 loadData();
