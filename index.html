@@ -1,160 +1,29 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Website Desa Digital</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title>Dashboard Desa Digital</title>
+  <link rel="stylesheet" href="css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-light">
+<body>
+  <header>
+    <h1>Dashboard Desa Digital</h1>
+  </header>
 
-<div class="container py-5">
-  <h1 class="mb-4">Data Penduduk Desa</h1>
-  
-  <!-- Statistik Umum -->
-  <div class="row mb-4">
-    <div class="col-md-3">
-      <div class="card text-center p-3"><h5>Total Penduduk</h5><h2 id="totalPenduduk">0</h2></div>
-    </div>
-    <div class="col-md-3">
-      <div class="card text-center p-3"><h5>Total KK</h5><h2 id="totalKK">0</h2></div>
-    </div>
-    <div class="col-md-3">
-      <div class="card text-center p-3"><h5>Laki-laki</h5><h2 id="maleCount">0</h2></div>
-    </div>
-    <div class="col-md-3">
-      <div class="card text-center p-3"><h5>Perempuan</h5><h2 id="femaleCount">0</h2></div>
-    </div>
-  </div>
+  <section>
+    <h2>Statistik Penduduk Berdasarkan Dusun</h2>
+    <canvas id="dusunChart"></canvas>
+  </section>
 
-  <div class="row mb-4">
-    <div class="col-md-6">
-      <div class="card p-3 mb-3">
-        <h5>Status Kawin</h5>
-        <canvas id="statusKawinChart"></canvas>
-      </div>
-    </div>
-    <div class="col-md-6">
-      <div class="card p-3 mb-3">
-        <h5>Kelompok Umur</h5>
-        <canvas id="ageGroupChart"></canvas>
-      </div>
-    </div>
-  </div>
+  <section>
+    <h2>Data Penduduk</h2>
+    <table id="pendudukTable">
+      <thead></thead>
+      <tbody></tbody>
+    </table>
+  </section>
 
-  <div class="row mb-4">
-    <div class="col-md-6">
-      <div class="card p-3 mb-3">
-        <h5>Pekerjaan</h5>
-        <canvas id="pekerjaanChart"></canvas>
-      </div>
-    </div>
-    <div class="col-md-6">
-      <div class="card p-3 mb-3">
-        <h5>Pendidikan</h5>
-        <canvas id="pendidikanChart"></canvas>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tabel Penduduk -->
-  <table class="table table-striped table-bordered">
-    <thead class="table-dark">
-      <tr>
-        <th>NIK</th><th>Nama</th><th>Jenis Kelamin</th><th>Tanggal Lahir</th><th>Pekerjaan</th>
-        <th>Pendidikan</th><th>Status Kawin</th><th>Alamat</th><th>Dusun</th><th>RT</th><th>RW</th>
-      </tr>
-    </thead>
-    <tbody id="pendudukTable"></tbody>
-  </table>
-</div>
-
-<script>
-const backendURL = "PASTE_URL_WEB_APP_ANDA_DI_SINI";
-
-// Fungsi hitung kelompok umur
-function getAgeGroup(tglLahir) {
-  const birth = new Date(tglLahir);
-  const age = new Date().getFullYear() - birth.getFullYear();
-  if (age <= 17) return "0-17";
-  else if (age <= 35) return "18-35";
-  else if (age <= 55) return "36-55";
-  else return "56+";
-}
-
-// Fungsi hitung frekuensi
-function countFrequency(arr) {
-  return arr.reduce((acc, val) => { acc[val] = (acc[val] || 0) + 1; return acc; }, {});
-}
-
-async function loadPenduduk() {
-  const res = await fetch(backendURL);
-  const data = await res.json();
-
-  // Statistik dasar
-  document.getElementById("totalPenduduk").innerText = data.length;
-  document.getElementById("maleCount").innerText = data.filter(p => p["Jenis Kelamin"] === "Laki-laki").length;
-  document.getElementById("femaleCount").innerText = data.filter(p => p["Jenis Kelamin"] === "Perempuan").length;
-
-  // Jumlah KK unik
-  const kkUnique = [...new Set(data.map(p => p["No KK"]))];
-  document.getElementById("totalKK").innerText = kkUnique.length;
-
-  // Status Kawin
-  const statusKawin = countFrequency(data.map(p => p["Status Kawin"]));
-  new Chart(document.getElementById("statusKawinChart"), {
-    type: "doughnut",
-    data: { labels: Object.keys(statusKawin), datasets: [{ data: Object.values(statusKawin), backgroundColor:["#36A2EB","#FF6384","#FFCE56"] }] }
-  });
-
-  // Kelompok umur
-  const ageGroup = countFrequency(data.map(p => getAgeGroup(p["Tanggal Lahir"])));
-  new Chart(document.getElementById("ageGroupChart"), {
-    type: "bar",
-    data: { labels: Object.keys(ageGroup), datasets: [{ label: "Jumlah", data: Object.values(ageGroup), backgroundColor:"#36A2EB" }] },
-    options: { responsive:true }
-  });
-
-  // Pekerjaan
-  const pekerjaan = countFrequency(data.map(p => p["Pekerjaan"]));
-  new Chart(document.getElementById("pekerjaanChart"), {
-    type: "bar",
-    data: { labels: Object.keys(pekerjaan), datasets: [{ label:"Jumlah", data:Object.values(pekerjaan), backgroundColor:"#FF6384" }] },
-    options:{ responsive:true, indexAxis:"y" }
-  });
-
-  // Pendidikan
-  const pendidikan = countFrequency(data.map(p => p["Pendidikan"]));
-  new Chart(document.getElementById("pendidikanChart"), {
-    type: "bar",
-    data: { labels: Object.keys(pendidikan), datasets: [{ label:"Jumlah", data:Object.values(pendidikan), backgroundColor:"#FFCE56" }] },
-    options:{ responsive:true, indexAxis:"y" }
-  });
-
-  // Tabel penduduk
-  const tbody = document.getElementById("pendudukTable");
-  data.forEach(p => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${p.NIK}</td>
-      <td>${p.Nama}</td>
-      <td>${p["Jenis Kelamin"]}</td>
-      <td>${p["Tanggal Lahir"]}</td>
-      <td>${p.Pekerjaan}</td>
-      <td>${p.Pendidikan}</td>
-      <td>${p["Status Kawin"]}</td>
-      <td>${p.Alamat}</td>
-      <td>${p.Dusun}</td>
-      <td>${p.RT}</td>
-      <td>${p.RW}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-loadPenduduk();
-</script>
-
+  <script src="js/app.js"></script>
 </body>
 </html>
