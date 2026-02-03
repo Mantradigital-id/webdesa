@@ -1,19 +1,11 @@
-// Ganti dengan URL Apps Script kamu (JSONP)
+// Ganti dengan URL Apps Script JSONP
 const apiUrl = "https://script.google.com/macros/s/AKfycbwIqQ5QIvBvy_tH5qxStKjVKEAph_9Y7em5TIw-4pmKbfSM_WJf3uI1oLo6NycHnlkijg/exec?callback=handleData";
 
-// =====================
 // Callback JSONP
-// =====================
 function handleData(data) {
-    console.log("Data diterima:", data);
-    if(!data || data.length === 0){
-        console.warn("Data kosong!");
-        return;
-    }
+    if(!data || data.length === 0) return;
 
-    // ---------------------
-    // 1️⃣ TABEL PENDUDUK
-    // ---------------------
+    // ================= TABEL PENDUDUK =================
     const table = document.getElementById('pendudukTable');
     const thead = table.querySelector('thead');
     const tbody = table.querySelector('tbody');
@@ -39,45 +31,32 @@ function handleData(data) {
         tbody.appendChild(tr);
     });
 
-    // ---------------------
-    // 2️⃣ PIE CHART DUSUN
-    // ---------------------
+    // ================= PIE CHARTS =================
+    function createPieChart(ctxId, dataObj, colors){
+        new Chart(document.getElementById(ctxId).getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: Object.keys(dataObj),
+                datasets: [{
+                    data: Object.values(dataObj),
+                    backgroundColor: colors
+                }]
+            },
+            options: { responsive: true }
+        });
+    }
+
+    // Dusun
     const dusunCount = {};
-    data.forEach(d => dusunCount[d.Dusun] = (dusunCount[d.Dusun] || 0) + 1);
+    data.forEach(d => dusunCount[d.Dusun] = (dusunCount[d.Dusun]||0)+1);
+    createPieChart('dusunChart', dusunCount, ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40']);
 
-    new Chart(document.getElementById('dusunChart').getContext('2d'), {
-        type: 'pie',
-        data: {
-            labels: Object.keys(dusunCount),
-            datasets: [{ 
-                data: Object.values(dusunCount),
-                backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40']
-            }]
-        },
-        options: { responsive: true }
-    });
-
-    // ---------------------
-    // 3️⃣ PIE CHART JENIS KELAMIN
-    // ---------------------
+    // Gender
     const genderCount = {};
-    data.forEach(d => genderCount[d["Jenis Kelamin"]] = (genderCount[d["Jenis Kelamin"]] || 0) + 1);
+    data.forEach(d => genderCount[d["Jenis Kelamin"]] = (genderCount[d["Jenis Kelamin"]]||0)+1);
+    createPieChart('genderChart', genderCount, ['#36A2EB','#FF6384']);
 
-    new Chart(document.getElementById('genderChart').getContext('2d'), {
-        type: 'pie',
-        data: {
-            labels: Object.keys(genderCount),
-            datasets: [{
-                data: Object.values(genderCount),
-                backgroundColor: ['#36A2EB','#FF6384']
-            }]
-        },
-        options: { responsive: true }
-    });
-
-    // ---------------------
-    // 4️⃣ PIE CHART UMUR (Kategori)
-    // ---------------------
+    // Umur (Kategori)
     const ageGroups = { "Anak (<17)":0, "Dewasa (17-59)":0, "Lansia (60+)":0 };
     data.forEach(d => {
         const age = parseInt(d.Umur);
@@ -85,60 +64,26 @@ function handleData(data) {
         else if(age <= 59) ageGroups["Dewasa (17-59)"]++;
         else ageGroups["Lansia (60+)"]++;
     });
+    createPieChart('ageChart', ageGroups, ['#FFCE56','#4BC0C0','#9966FF']);
 
-    new Chart(document.getElementById('ageChart').getContext('2d'), {
-        type: 'pie',
-        data: {
-            labels: Object.keys(ageGroups),
-            datasets: [{
-                data: Object.values(ageGroups),
-                backgroundColor: ['#FFCE56','#4BC0C0','#9966FF']
-            }]
-        },
-        options: { responsive: true }
-    });
-
-    // ---------------------
-    // 5️⃣ PIE CHART PENDIDIKAN
-    // ---------------------
+    // Pendidikan
     const educationCount = {};
-    data.forEach(d => educationCount[d.Pendidikan] = (educationCount[d.Pendidikan] || 0) + 1);
+    data.forEach(d => educationCount[d.Pendidikan] = (educationCount[d.Pendidikan]||0)+1);
+    createPieChart('educationChart', educationCount, ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40']);
 
-    new Chart(document.getElementById('educationChart').getContext('2d'), {
-        type: 'pie',
-        data: {
-            labels: Object.keys(educationCount),
-            datasets: [{
-                data: Object.values(educationCount),
-                backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40']
-            }]
-        },
-        options: { responsive: true }
-    });
-
-    // ---------------------
-    // 6️⃣ PIE CHART PEKERJAAN
-    // ---------------------
+    // Pekerjaan
     const jobCount = {};
-    data.forEach(d => jobCount[d.Pekerjaan] = (jobCount[d.Pekerjaan] || 0) + 1);
+    data.forEach(d => jobCount[d.Pekerjaan] = (jobCount[d.Pekerjaan]||0)+1);
+    createPieChart('jobChart', jobCount, ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40','#FFA500']);
 
-    new Chart(document.getElementById('jobChart').getContext('2d'), {
-        type: 'pie',
-        data: {
-            labels: Object.keys(jobCount),
-            datasets: [{
-                data: Object.values(jobCount),
-                backgroundColor: ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40','#FF9F40']
-            }]
-        },
-        options: { responsive: true }
-    });
+    // Status Kawin
+    const maritalCount = {};
+    data.forEach(d => maritalCount[d["Status Kawin"]] = (maritalCount[d["Status Kawin"]]||0)+1);
+    createPieChart('maritalChart', maritalCount, ['#36A2EB','#FF6384','#FFCE56']);
 }
 
-// ======================
-// Tambahkan script JSONP ke halaman
-// ======================
-(function() {
+// Tambahkan JSONP script
+(function(){
     const script = document.createElement('script');
     script.src = apiUrl;
     document.body.appendChild(script);
